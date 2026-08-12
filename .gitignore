@@ -36,3 +36,7 @@ ml/data/processed/*
 # Python cache
 .pytest_cache/
 .mypy_cache/
+
+# Trained ML models
+models/*.joblib
+models/*.pkl
