@@ -38,3 +38,32 @@ ml/         → Machine Learning pipeline
 tests/      → Automated tests
 notebooks/  → Data Science experiments
 models/     → Trained ML models
+
+## 📊 Dataset
+
+This project uses the Metro Interstate Traffic Volume dataset
+from the UCI Machine Learning Repository.
+
+The dataset contains traffic volume observations along with
+weather and time-related information.
+
+### Main Features
+
+- Holiday
+- Temperature
+- Rainfall
+- Snowfall
+- Cloud coverage
+- Weather condition
+- Date and time
+- Traffic volume
+
+### Target
+
+`traffic_volume`
+
+### Dataset Source
+
+UCI Machine Learning Repository:
+
+https://archive.ics.uci.edu/dataset/492/metro+interstate+traffic+volume
