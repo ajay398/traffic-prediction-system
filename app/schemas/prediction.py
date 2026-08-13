@@ -106,3 +106,30 @@ class TrafficPredictionResponse(BaseModel):
     model: str
 
     status: str
+
+
+class PredictionHistoryItem(BaseModel):
+    """Prediction history response."""
+
+    id: int
+
+    prediction_time: datetime
+
+    predicted_traffic_volume: float
+
+    model_name: str
+
+    created_at: datetime
+
+
+class PredictionHistoryResponse(BaseModel):
+    """Paginated prediction history."""
+
+    items: list[PredictionHistoryItem]
+
+    total: int
+
+    limit: int
+
+    offset: int
+

@@ -5,6 +5,14 @@ Traffic prediction API routes.
 from fastapi import APIRouter
 from fastapi import HTTPException
 from fastapi import status
+from fastapi import Depends
+from sqlalchemy.orm import Session
+from app.schemas.prediction import (
+    PredictionHistoryItem,
+    PredictionHistoryResponse,
+)
+
+from app.database.connection import get_db
 
 from app.schemas.prediction import (
     TrafficPredictionRequest,
@@ -12,6 +20,10 @@ from app.schemas.prediction import (
 )
 from app.services.prediction_service import (
     prediction_service,
+)
+
+from app.repositories.prediction_repository import (
+    PredictionRepository,
 )
 
 
@@ -27,6 +39,7 @@ router = APIRouter(
 )
 def predict_traffic(
     request: TrafficPredictionRequest,
+    db: Session = Depends(get_db),
 ):
     """Predict traffic volume."""
 
@@ -34,6 +47,7 @@ def predict_traffic(
 
         prediction = (
             prediction_service.predict(
+                db=db,
                 date_time=request.date_time,
                 temp=request.temp,
                 rain_1h=request.rain_1h,
@@ -76,7 +90,7 @@ def predict_traffic(
 
         return TrafficPredictionResponse(
             predicted_traffic_volume=round(
-                prediction,
+                prediction.predicted_traffic_volume,
                 2,
             ),
             model=(
@@ -93,3 +107,128 @@ def predict_traffic(
             ),
             detail=str(exc),
         ) from exc
+
+@router.get(
+    "/history",
+    response_model=PredictionHistoryResponse,
+)
+def get_prediction_history(
+    limit: int = 50,
+    offset: int = 0,
+    db: Session = Depends(get_db),
+):
+    """Return prediction history."""
+
+    if limit < 1 or limit > 100:
+        raise HTTPException(
+            status_code=400,
+            detail="limit must be between 1 and 100",
+        )
+
+    if offset < 0:
+        raise HTTPException(
+            status_code=400,
+            detail="offset cannot be negative",
+        )
+
+    predictions = (
+        PredictionRepository.get_history(
+            db=db,
+            limit=limit,
+            offset=offset,
+        )
+    )
+
+    total = (
+    PredictionRepository.count(
+        db=db
+    )
+)
+   
+
+
+    items = [
+        PredictionHistoryItem(
+            id=item.id,
+            prediction_time=item.prediction_time,
+            predicted_traffic_volume=(
+                item.predicted_traffic_volume
+            ),
+            model_name=item.model_name,
+            created_at=item.created_at,
+        )
+        for item in predictions
+    ]
+
+    return PredictionHistoryResponse(
+        items=items,
+        total=total,
+        limit=limit,
+       offset=offset,
+    )
+
+@router.get(
+    "/history/{prediction_id}",
+    response_model=PredictionHistoryItem,
+)
+def get_prediction(
+    prediction_id: int,
+    db: Session = Depends(get_db),
+):
+    """Get a prediction by ID."""
+
+    prediction = (
+        PredictionRepository.get_by_id(
+            db=db,
+            prediction_id=prediction_id,
+        )
+    )
+
+    if prediction is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Prediction not found",
+        )
+
+    return PredictionHistoryItem(
+        id=prediction.id,
+        prediction_time=prediction.prediction_time,
+        predicted_traffic_volume=(
+            prediction.predicted_traffic_volume
+        ),
+        model_name=prediction.model_name,
+        created_at=prediction.created_at,
+    )
+
+@router.delete(
+    "/history/{prediction_id}",
+)
+def delete_prediction(
+    prediction_id: int,
+    db: Session = Depends(get_db),
+):
+    """Delete prediction history record."""
+
+    prediction = (
+        PredictionRepository.get_by_id(
+            db=db,
+            prediction_id=prediction_id,
+        )
+    )
+
+    if prediction is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Prediction not found",
+        )
+
+    PredictionRepository.delete(
+        db=db,
+        prediction=prediction,
+    )
+
+    return {
+        "status": "success",
+        "message": "Prediction deleted",
+        "prediction_id": prediction_id,
+    }

@@ -10,6 +10,13 @@ import pandas as pd
 
 from app.core.config import settings
 
+from sqlalchemy.orm import Session
+
+from app.database.models import Prediction
+from app.repositories.prediction_repository import (
+    PredictionRepository,
+)
+
 
 class PredictionService:
     """Service responsible for loading and running the ML model."""
@@ -40,6 +47,7 @@ class PredictionService:
     def predict(
         self,
         *,
+        db: Session,
         date_time: datetime,
         temp: float,
         rain_1h: float,
@@ -170,9 +178,36 @@ class PredictionService:
             input_df
         )
 
-        return float(
-            prediction[0]
+        predicted_value = float(
+        prediction[0]
         )
+
+        prediction_record = Prediction(
+        prediction_time=date_time,
+        temp=temp,
+        rain_1h=rain_1h,
+        snow_1h=snow_1h,
+        clouds_all=clouds_all,
+        holiday=holiday,
+        weather_main=weather_main,
+        weather_description=weather_description,
+        traffic_lag_1h=traffic_lag_1h,
+        traffic_lag_2h=traffic_lag_2h,
+        traffic_lag_3h=traffic_lag_3h,
+        traffic_lag_24h=traffic_lag_24h,
+        traffic_lag_168h=traffic_lag_168h,
+        rolling_mean_3h=rolling_mean_3h,
+        rolling_mean_6h=rolling_mean_6h,
+        rolling_mean_24h=rolling_mean_24h,
+        rolling_std_24h=rolling_std_24h,
+        predicted_traffic_volume=predicted_value,
+        model_name="xgboost-timeseries",
+)
+
+        return PredictionRepository.create(
+    db=db,
+    prediction=prediction_record,
+)
 
 
 prediction_service = PredictionService()

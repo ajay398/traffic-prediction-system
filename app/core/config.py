@@ -7,9 +7,9 @@ from pathlib import Path
 from pydantic_settings import BaseSettings
 
 
-PROJECT_ROOT = Path(
-    __file__
-).resolve().parents[2]
+PROJECT_ROOT = (
+    Path(__file__).resolve().parents[2]
+)
 
 
 class Settings(BaseSettings):
@@ -24,6 +24,8 @@ class Settings(BaseSettings):
     model_path: str = (
         "models/traffic_volume_timeseries.joblib"
     )
+
+    database_url: str
 
     class Config:
         env_file = ".env"
