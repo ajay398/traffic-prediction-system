@@ -3,6 +3,8 @@ Database models.
 """
 
 from datetime import datetime
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import relationship
 
 from sqlalchemy import DateTime
 from sqlalchemy import Float
@@ -11,8 +13,53 @@ from sqlalchemy import String
 from sqlalchemy import func
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
+from sqlalchemy import Boolean
 
 from app.database.base import Base
+
+class User(Base):
+    """
+    Application user.
+    """
+
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    email: Mapped[str] = mapped_column(
+        String(255),
+        unique=True,
+        index=True,
+        nullable=False,
+    )
+
+    username: Mapped[str] = mapped_column(
+        String(100),
+        unique=True,
+        index=True,
+        nullable=False,
+    )
+
+    hashed_password: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+
+    is_active: Mapped[bool] = mapped_column(
+        Boolean,
+        default=True,
+        nullable=False,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        server_default=func.now(),
+        nullable=False,
+    )
 
 
 class Prediction(Base):
@@ -27,6 +74,12 @@ class Prediction(Base):
         Integer,
         primary_key=True,
         autoincrement=True,
+    )
+
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id"),
+        nullable=False,
+        index=True,
     )
 
     prediction_time: Mapped[datetime] = (
@@ -157,3 +210,5 @@ class Prediction(Base):
             nullable=False,
         )
     )
+
+    

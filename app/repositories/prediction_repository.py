@@ -31,13 +31,15 @@ class PredictionRepository:
     def get_by_id(
         db: Session,
         prediction_id: int,
+        user_id: int,
     ) -> Prediction | None:
         """Get prediction by ID."""
 
         statement = select(
             Prediction
         ).where(
-            Prediction.id == prediction_id
+            Prediction.id == prediction_id,
+            Prediction.user_id == user_id,
         )
 
         return db.scalar(statement)
@@ -45,6 +47,7 @@ class PredictionRepository:
     @staticmethod
     def get_history(
         db: Session,
+        user_id: int,
         limit: int = 50,
         offset: int = 0,
     ) -> list[Prediction]:
@@ -52,6 +55,9 @@ class PredictionRepository:
 
         statement = (
             select(Prediction)
+            .where(
+             Prediction.user_id == user_id
+            )
             .order_by(
                 Prediction.created_at.desc()
             )
@@ -75,16 +81,19 @@ class PredictionRepository:
         db.commit()
 
 
-@staticmethod
-def count(
-    db: Session,
-) -> int:
-    """Count prediction records."""
+    @staticmethod
+    def count(
+        db: Session,
+        user_id: int,
+    ) -> int:
+        """Count prediction records."""
 
-    statement = select(
-        func.count(Prediction.id)
-    )
+        statement = select(
+            func.count(Prediction.id)
+        ).where(
+            Prediction.user_id == user_id
+        )
 
-    return int(
-        db.scalar(statement) or 0
-    )
+        return int(
+            db.scalar(statement) or 0
+        )

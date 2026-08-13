@@ -48,6 +48,7 @@ class PredictionService:
         self,
         *,
         db: Session,
+        user_id: int,
         date_time: datetime,
         temp: float,
         rain_1h: float,
@@ -183,6 +184,7 @@ class PredictionService:
         )
 
         prediction_record = Prediction(
+        user_id=user_id,
         prediction_time=date_time,
         temp=temp,
         rain_1h=rain_1h,

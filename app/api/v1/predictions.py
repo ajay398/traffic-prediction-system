@@ -25,6 +25,10 @@ from app.services.prediction_service import (
 from app.repositories.prediction_repository import (
     PredictionRepository,
 )
+from app.api.dependencies import (
+    get_current_user,
+)
+from app.database.models import User
 
 
 router = APIRouter(
@@ -40,6 +44,9 @@ router = APIRouter(
 def predict_traffic(
     request: TrafficPredictionRequest,
     db: Session = Depends(get_db),
+    current_user: User = Depends(
+        get_current_user
+    ),
 ):
     """Predict traffic volume."""
 
@@ -48,6 +55,7 @@ def predict_traffic(
         prediction = (
             prediction_service.predict(
                 db=db,
+                user_id=current_user.id,
                 date_time=request.date_time,
                 temp=request.temp,
                 rain_1h=request.rain_1h,
@@ -116,6 +124,9 @@ def get_prediction_history(
     limit: int = 50,
     offset: int = 0,
     db: Session = Depends(get_db),
+    current_user: User = Depends(
+        get_current_user
+    ),
 ):
     """Return prediction history."""
 
@@ -134,6 +145,7 @@ def get_prediction_history(
     predictions = (
         PredictionRepository.get_history(
             db=db,
+            user_id=current_user.id,
             limit=limit,
             offset=offset,
         )
@@ -141,7 +153,8 @@ def get_prediction_history(
 
     total = (
     PredictionRepository.count(
-        db=db
+        db=db,
+        user_id=current_user.id,
     )
 )
    
@@ -174,6 +187,9 @@ def get_prediction_history(
 def get_prediction(
     prediction_id: int,
     db: Session = Depends(get_db),
+    current_user: User = Depends(
+        get_current_user
+    ),
 ):
     """Get a prediction by ID."""
 
@@ -181,6 +197,7 @@ def get_prediction(
         PredictionRepository.get_by_id(
             db=db,
             prediction_id=prediction_id,
+            user_id=current_user.id,
         )
     )
 
@@ -206,6 +223,9 @@ def get_prediction(
 def delete_prediction(
     prediction_id: int,
     db: Session = Depends(get_db),
+    current_user: User = Depends(
+        get_current_user
+    ),
 ):
     """Delete prediction history record."""
 
@@ -213,6 +233,7 @@ def delete_prediction(
         PredictionRepository.get_by_id(
             db=db,
             prediction_id=prediction_id,
+            user_id=current_user.id,
         )
     )
 

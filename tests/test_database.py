@@ -35,6 +35,7 @@ def test_create_prediction():
     db = create_test_session()
 
     prediction = Prediction(
+        user_id=1,
         prediction_time=datetime.now(),
         temp=280.0,
         rain_1h=0.0,
@@ -76,6 +77,7 @@ def test_get_prediction():
     db = create_test_session()
 
     prediction = Prediction(
+        user_id=1,
         prediction_time=datetime.now(),
         temp=280.0,
         rain_1h=0.0,
@@ -108,6 +110,7 @@ def test_get_prediction():
         PredictionRepository.get_by_id(
             db=db,
             prediction_id=created.id,
+            user_id=1,
         )
     )
 

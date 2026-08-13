@@ -6,7 +6,8 @@ from app.database.base import Base
 from app.database.connection import engine
 
 # Import models so SQLAlchemy knows about them.
-from app.database.models import Prediction  # noqa: F401
+from app.database.models import Prediction
+from app.database.models import User # noqa: F401
 
 
 def init_db() -> None:
